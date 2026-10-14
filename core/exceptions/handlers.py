@@ -17,6 +17,6 @@ def handle_exception(exc, context):
         message=get_error_message(original) or "Request failed",
         data={},
         errors=errors,
-        error_code=getattr(exc, "auth_code", None),
+        error_code=getattr(exc, "error_code", None) or getattr(exc, "auth_code", None),
     )
     return response
