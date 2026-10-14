@@ -32,3 +32,13 @@ class LoginResponseSchema(serializers.ModelSerializer):
             if value is None:
                 data[key] = ""
         return data
+
+
+class GetUsersApiSchema(LoginResponseSchema):
+
+    class Meta(LoginResponseSchema.Meta):
+        fields = LoginResponseSchema.Meta.fields + (
+            "is_staff",
+            "last_login",
+        )
+        read_only_fields = fields

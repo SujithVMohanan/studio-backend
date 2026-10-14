@@ -2,8 +2,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from apps.users.schema import LoginResponseSchema
+from apps.users.schema import GetUsersApiSchema, LoginResponseSchema
 from apps.users.serializer import (
+    DeleteUsersSerializer,
+    GetUsersQuerySerializer,
     LoginUserSerializer,
     LogoutUserSerializer,
     RefreshTokenSerializer,
@@ -142,3 +144,47 @@ class CurrentUserApiView(generics.GenericAPIView):
             self.get_serializer(request.user).data,
             message="User retrieved successfully.",
         )
+
+
+class GetUsersApiView(generics.ListAPIView):
+
+    permission_classes     = [IsAuthenticated,]
+    serializer_class       = GetUsersApiSchema
+    query_serializer_class = GetUsersQuerySerializer
+
+    @swagger_auto_schema(
+        query_serializer=GetUsersQuerySerializer,
+        tags=["Users"],
+        operation_summary="Get users",
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        query = self.query_serializer_class(data=self.request.query_params)
+        query.is_valid(raise_exception=True)
+        return UserService.get_users(validated_data=query.validated_data)
+
+
+class DeleteUsersApiView(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated,]
+    serializer_class   = DeleteUsersSerializer
+
+    @swagger_auto_schema(
+        request_body=DeleteUsersSerializer,
+        tags=["Users"],
+        operation_summary="Delete users",
+    )
+    def delete(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if not serializer.is_valid():
+            return ResponseInfo.validation_error(serializer.errors)
+
+        payload = UserService.delete_users(
+            actor=request.user,
+            validated_data=serializer.validated_data,
+        )
+
+        return ResponseInfo.ok(payload, message="User(s) deleted successfully.")

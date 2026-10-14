@@ -3,6 +3,9 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from apps.users.models import User
+from core.encryption.fields import EncodedIdField
+
+USER_ID_NAMESPACE = User._meta.label_lower
 
 
 def _password_field():
@@ -55,3 +58,27 @@ class LogoutUserSerializer(serializers.Serializer):
 
     def validate_refresh(self, value):
         return (value or "").strip() or None
+
+
+class GetUsersQuerySerializer(serializers.Serializer):
+    uid       = EncodedIdField(namespace=USER_ID_NAMESPACE, required=False, help_text="Encoded user id")
+    email     = serializers.CharField(required=False, allow_blank=True, max_length=254)
+    name      = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    role      = serializers.ChoiceField(choices=User.Role.choices, required=False)
+    is_active = serializers.BooleanField(required=False, allow_null=True, default=None)
+
+    def validate(self, attrs):
+        for key in ("email", "name"):
+            attrs[key] = (attrs.get(key) or "").strip() or None
+        return attrs
+
+
+class DeleteUsersSerializer(serializers.Serializer):
+    uids = serializers.ListField(
+        child=EncodedIdField(namespace=USER_ID_NAMESPACE),
+        allow_empty=False,
+        max_length=100,
+    )
+
+    def validate_uids(self, value):
+        return list(dict.fromkeys(value))
