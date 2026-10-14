@@ -23,3 +23,11 @@ class AwareDateTimeField(serializers.DateTimeField):
             if parsed is not None and timezone.is_naive(parsed):
                 self.fail("naive")
         return super().to_internal_value(value)
+
+
+class BlankNullsMixin:
+    """Render None values as "" in serialized output. Must come before the serializer class in the bases."""
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {key: ("" if value is None else value) for key, value in data.items()}

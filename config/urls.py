@@ -36,6 +36,7 @@ urlpatterns = [
                 path("studios/", include("apps.studios.urls.studio_urls")),
                 path("classes/", include("apps.studios.urls.class_urls")),
                 path("credits/", include("apps.credits.urls")),
+                path("bookings/", include("apps.bookings.urls")),
 
                 
 

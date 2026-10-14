@@ -1,12 +1,11 @@
-
 from rest_framework import serializers
 
 from apps.users.models import User
 from core.encryption.fields import EncodedIdField
+from core.utils.serializers import BlankNullsMixin
 
 
-class LoginResponseSchema(serializers.ModelSerializer):
-
+class LoginResponseSchema(BlankNullsMixin, serializers.ModelSerializer):
     uid = EncodedIdField(
         namespace=User._meta.label_lower,
         source="id",
@@ -26,16 +25,7 @@ class LoginResponseSchema(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        for key, value in data.items():
-            if value is None:
-                data[key] = ""
-        return data
-
-
 class GetUsersApiSchema(LoginResponseSchema):
-
     class Meta(LoginResponseSchema.Meta):
         fields = LoginResponseSchema.Meta.fields + (
             "is_staff",

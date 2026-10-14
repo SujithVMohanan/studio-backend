@@ -4,18 +4,12 @@ from apps.bookings.models import Booking
 from apps.studios.models import ClassSession
 from apps.studios.serializer import CLASS_ID_NAMESPACE
 from core.encryption.fields import EncodedIdField
+from core.utils.serializers import BlankNullsMixin
 
 BOOKING_ID_NAMESPACE = Booking._meta.label_lower
 
 
-class _BlankNullsMixin:
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return {key: ("" if value is None else value) for key, value in data.items()}
-
-
-
-class ClassSummarySchema(_BlankNullsMixin, serializers.ModelSerializer):
+class ClassSummarySchema(BlankNullsMixin, serializers.ModelSerializer):
     uid             = EncodedIdField(namespace=CLASS_ID_NAMESPACE, source="id", read_only=True)
     studio_name     = serializers.CharField(source="studio.name", read_only=True)
     studio_timezone = serializers.CharField(source="studio.timezone", read_only=True)
@@ -26,10 +20,8 @@ class ClassSummarySchema(_BlankNullsMixin, serializers.ModelSerializer):
         read_only_fields = fields
 
 
-
-class BookingSchema(_BlankNullsMixin, serializers.ModelSerializer):
-
-    uid   = EncodedIdField(namespace=BOOKING_ID_NAMESPACE, source="id", read_only=True)
+class BookingSchema(BlankNullsMixin, serializers.ModelSerializer):
+    uid           = EncodedIdField(namespace=BOOKING_ID_NAMESPACE, source="id", read_only=True)
     class_session = ClassSummarySchema(read_only=True)
 
     class Meta:
@@ -39,5 +31,3 @@ class BookingSchema(_BlankNullsMixin, serializers.ModelSerializer):
             "booked_at", "cancelled_at", "credits_refunded", "cancellation_outcome",
         )
         read_only_fields = fields
-
-    

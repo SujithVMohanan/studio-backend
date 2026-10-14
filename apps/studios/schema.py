@@ -3,9 +3,10 @@ from rest_framework import serializers
 from apps.studios.models import ClassSession, Studio
 from apps.studios.serializer import CLASS_ID_NAMESPACE, STUDIO_ID_NAMESPACE
 from core.encryption.fields import EncodedIdField
+from core.utils.serializers import BlankNullsMixin
 
 
-class StudioSchema(serializers.ModelSerializer):
+class StudioSchema(BlankNullsMixin, serializers.ModelSerializer):
     uid = EncodedIdField(namespace=STUDIO_ID_NAMESPACE, source="id", read_only=True)
 
     class Meta:
@@ -19,20 +20,8 @@ class StudioSummarySchema(StudioSchema):
         fields = ("uid", "name", "timezone", "cancellation_cutoff_hours")
         read_only_fields = fields
 
-    
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        for key, value in data.items():
-            if value is None:
-                data[key] = ""
-        return data
-
-
-
-
-class ClassSessionSchema(serializers.ModelSerializer):
-
+class ClassSessionSchema(BlankNullsMixin, serializers.ModelSerializer):
     uid             = EncodedIdField(namespace=CLASS_ID_NAMESPACE, source="id", read_only=True)
     studio          = StudioSummarySchema(read_only=True)
     starts_at_local = serializers.SerializerMethodField()
@@ -52,12 +41,3 @@ class ClassSessionSchema(serializers.ModelSerializer):
 
     def get_spots_remaining(self, obj: ClassSession) -> int:
         return max(obj.spots - getattr(obj, "confirmed_count", 0), 0)
-
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        for key, value in data.items():
-            if value is None:
-                data[key] = ""
-        return data
-
