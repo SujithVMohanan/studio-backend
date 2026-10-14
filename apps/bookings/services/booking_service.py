@@ -13,16 +13,12 @@ from apps.studios.repository import ClassSessionRepository
 from apps.users.models import User
 from core.exceptions.business import BusinessConflict, ResourceNotFound
 from core.utils import clock
+from core.utils.db import constraint_name
 
 logger = logging.getLogger("studio")
 
 IDEMPOTENCY_CONSTRAINT = "uniq_booking_idempotency_key_per_member"
 CONFIRMED_CONSTRAINT   = "uniq_confirmed_booking_per_member_class"
-
-
-def _constraint_name(exc: IntegrityError) -> str | None:
-    diagnostic = getattr(exc.__cause__, "diag", None)
-    return getattr(diagnostic, "constraint_name", None)
 
 
 def _replay(
@@ -106,7 +102,7 @@ class BookingService:
                 )
 
         except IntegrityError as exc:
-            constraint = _constraint_name(exc)
+            constraint = constraint_name(exc)
 
             if constraint == IDEMPOTENCY_CONSTRAINT:
                 existing = BookingRepository.get_by_member_key(

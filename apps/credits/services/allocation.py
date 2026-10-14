@@ -82,6 +82,15 @@ def spend_for_booking(*, booking, now: datetime) -> int:
         amount=booking.credits_charged,
         today=clock.utc_today(now),
     )
+    return record_spend(booking=booking, plan=plan, now=now)
+
+
+def record_spend(
+    *,
+    booking,
+    plan: list[tuple[CreditPack, int]],
+    now: datetime,
+) -> int:
     CreditLedgerRepository.bulk_create(
         [
             CreditLedger(
