@@ -46,6 +46,11 @@ class CreditLedger(models.Model):
     amount     = models.IntegerField(_("Amount"),blank=False)
     cause      = models.CharField(_("Cause"), max_length=10, choices=Cause.choices,blank=True,null=True)
     created_at = models.DateTimeField(_("Created At"), default=timezone.now)
+    booking    = models.ForeignKey(
+                        "bookings.Booking", on_delete=models.PROTECT, 
+                        null=True, blank=True, 
+                        related_name="ledger_entries"
+                    )
 
     class Meta:
         db_table = "credits_ledger"

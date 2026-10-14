@@ -8,6 +8,7 @@ from apps.credits.models import CreditLedger, CreditPack
 
 
 class CreditPackRepository:
+
     @staticmethod
     def create(**fields: Any) -> CreditPack:
         return CreditPack.objects.create(**fields)
@@ -39,6 +40,7 @@ class CreditPackRepository:
 
 
 class CreditLedgerRepository:
+
     @staticmethod
     def create(**fields: Any) -> CreditLedger:
         return CreditLedger.objects.create(**fields)
@@ -81,3 +83,15 @@ class CreditLedgerRepository:
             filters &= Q(cause=cause)
 
         return CreditLedger.objects.filter(filters).order_by("created_at", "id")
+
+    
+    @staticmethod
+    def bulk_create(rows: list[CreditLedger]) -> list[CreditLedger]:
+        return CreditLedger.objects.bulk_create(rows)
+    
+
+    @staticmethod
+    def spend_rows_for_booking(booking_id: int) -> list[CreditLedger]:
+        return list(
+            CreditLedger.objects.filter(booking_id=booking_id, cause=CreditLedger.Cause.SPEND).order_by("id")
+        )

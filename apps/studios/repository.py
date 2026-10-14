@@ -4,12 +4,13 @@
 from datetime import datetime
 from typing import Any
 
-from django.db.models import IntegerField, Q, QuerySet, Value
+from django.db.models import Count, IntegerField, Q, QuerySet, Value
 
 from apps.studios.models import ClassSession, Studio
 
 
 class StudioRepository:
+
     @staticmethod
     def create(**fields: Any) -> Studio:
         return Studio.objects.create(**fields)
@@ -51,6 +52,7 @@ class StudioRepository:
 
 
 class ClassSessionRepository:
+
     @staticmethod
     def create(**fields: Any) -> ClassSession:
         return ClassSession.objects.create(**fields)
@@ -87,8 +89,8 @@ class ClassSessionRepository:
             filters &= Q(studio_id=studio_id)
 
         return (
-            ClassSession.objects.select_related("studio")
-            .filter(filters)
-            .annotate(confirmed_count=Value(0, output_field=IntegerField()))
-            .order_by("starts_at", "id")
+                ClassSession.objects.select_related("studio")
+                .filter(filters)
+                .annotate(confirmed_count=Count("bookings", filter=Q(bookings__status="confirmed")))
+                .order_by("starts_at", "id")
         )

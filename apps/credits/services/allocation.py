@@ -1,10 +1,12 @@
 
 
-from datetime import date
+from datetime import date, datetime
 
-from apps.credits.models import CreditPack
+from apps.credits.models import CreditPack, CreditLedger
 from apps.credits.repository import CreditLedgerRepository, CreditPackRepository
 from core.exceptions.business import BusinessConflict
+from core.utils import clock
+
 
 
 def spendable_balance(
@@ -66,3 +68,53 @@ def plan_allocation(
         "Not enough credits to book this class.",
         code="INSUFFICIENT_CREDITS",
     )
+
+
+
+
+
+
+
+def spend_for_booking(*, booking, now: datetime) -> int:
+
+    plan = plan_allocation(
+        member_id=booking.member_id,
+        amount=booking.credits_charged,
+        today=clock.utc_today(now),
+    )
+    CreditLedgerRepository.bulk_create(
+        [
+            CreditLedger(
+                member_id=booking.member_id,
+                pack=pack,
+                booking=booking,
+                amount=-taken,
+                cause=CreditLedger.Cause.SPEND,
+                created_at=now,
+            )
+            for pack, taken in plan
+        ]
+    )
+    return sum(taken for _, taken in plan)
+
+
+
+
+def refund_booking(*, booking, now: datetime) -> int:
+
+    spends = CreditLedgerRepository.spend_rows_for_booking(booking.id)
+
+    CreditLedgerRepository.bulk_create(
+        [
+            CreditLedger(
+                member_id=row.member_id,
+                pack_id=row.pack_id,
+                booking=booking,
+                amount=-row.amount,
+                cause=CreditLedger.Cause.REFUND,
+                created_at=now,
+            )
+            for row in spends
+        ]
+    )
+    return sum(-row.amount for row in spends)

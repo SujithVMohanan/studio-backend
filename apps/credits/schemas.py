@@ -80,3 +80,31 @@ class LedgerEntrySchema(serializers.ModelSerializer):
             if value is None:
                 data[key] = ""
         return data
+
+
+
+
+
+BOOKING_ID_NAMESPACE = "bookings.booking"
+
+
+class LedgerEntrySchema(serializers.ModelSerializer):
+
+    uid         = EncodedIdField(namespace=LEDGER_ID_NAMESPACE, source="id", read_only=True)
+    pack_uid    = EncodedIdField(namespace=PACK_ID_NAMESPACE, source="pack_id", read_only=True)
+    booking_uid = EncodedIdField(namespace=BOOKING_ID_NAMESPACE, source="booking_id", read_only=True)
+
+    class Meta:
+        model = CreditLedger
+        fields = ("uid", "amount", "cause", "pack_uid", "booking_uid", "created_at")
+        read_only_fields = fields
+
+
+
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for key, value in data.items():
+            if value is None:
+                data[key] = ""
+        return data
