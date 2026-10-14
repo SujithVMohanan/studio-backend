@@ -65,7 +65,7 @@ class ResponseInfo:
     @classmethod
     def no_content(cls, message="Deleted successfully"):
         return cls._reply(
-            ok=True, code=status.HTTP_204_NO_CONTENT, message=message
+            ok=True, code=status.HTTP_200_OK, message=message
             )
     
 
