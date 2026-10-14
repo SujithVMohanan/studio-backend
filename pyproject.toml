@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+testpaths = ["core/tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers --import-mode=importlib"

@@ -57,3 +57,10 @@ class ClassSession(models.Model):
             models.CheckConstraint(condition=Q(spots__gte=1), name="class_spots_gte_1"),
             models.CheckConstraint(condition=Q(duration_minutes__gte=1), name="class_duration_gte_1"),
         ]
+
+    @property
+    def ends_at(self) -> datetime:
+        return self.starts_at + timedelta(minutes=self.duration_minutes)
+
+    def __str__(self) -> str:
+        return f"{self.studio_id} @ {self.starts_at.isoformat()}"

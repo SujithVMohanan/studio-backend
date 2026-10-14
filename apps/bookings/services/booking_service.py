@@ -63,6 +63,13 @@ class BookingService:
                         code="CLASS_NOT_FOUND",
                     )
 
+                existing = BookingRepository.get_by_member_key(
+                    member.id,
+                    idempotency_key,
+                )
+                if existing is not None:
+                    return _replay(existing, class_id)
+
                 if session.starts_at <= current_time:
                     raise BusinessConflict(
                         "This class has already started.",
