@@ -1,10 +1,9 @@
-
 from django.contrib.auth.base_user import BaseUserManager
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.db.models.functions import Lower
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
 
 
 class UserManager(BaseUserManager):
@@ -12,22 +11,19 @@ class UserManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
-
         if not email:
             raise ValueError("Email address is required.")
 
         email = self.normalize_email(email).lower()
-        user  = self.model(email=email, **extra_fields)
-
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-
         return user
 
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-
+        extra_fields.setdefault("is_active", True)
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password=None, **extra_fields):
@@ -41,33 +37,32 @@ class UserManager(BaseUserManager):
 
         if extra_fields["is_staff"] is not True:
             raise ValueError("Superuser must have is_staff=True.")
-
         if extra_fields["is_superuser"] is not True:
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
 
 
-class User(AbstractUser):
+class User(AbstractBaseUser, PermissionsMixin):
 
     class Role(models.TextChoices):
-        STAFF   = "staff", "Staff"
-        MEMBER  = "member", "Member"
+        STAFF  = "staff", "Staff"
+        MEMBER = "member", "Member"
 
-    full_name = models.CharField(_("full name"), max_length=255, blank=True,null=True)
-    email     = models.EmailField(_("email address"), unique=True, blank=False, null=False)
-    role      = models.CharField("role",max_length=10,choices=Role.choices,default=Role.MEMBER,blank=False,null=False)
-    is_active = models.BooleanField(_("active"), default=True)
-    is_staff  = models.BooleanField(_("staff status"), default=False)
-    is_admin  = models.BooleanField(_("admin status"), default=False)
-    password  = models.CharField(_("password"), max_length=128, blank=False, null=False)
-    objects   = UserManager()
+    full_name   = models.CharField(_("full name"), max_length=255, blank=True)
+    email       = models.EmailField(_("email address"), unique=True)
+    role        = models.CharField(_("role"),max_length=10,choices=Role.choices,default=Role.MEMBER,)
+    is_active   = models.BooleanField(_("active"), default=True)
+    is_staff    = models.BooleanField(_("staff status"), default=False)
+    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+
+    objects     = UserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     class Meta:
-        db_table = "accounts_user"
+        db_table = "users_users"
         constraints = [
             models.UniqueConstraint(
                 Lower("email"),
@@ -75,5 +70,10 @@ class User(AbstractUser):
             ),
         ]
 
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.__class__.objects.normalize_email(self.email).lower()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.email
+        return f"{self.email}"
