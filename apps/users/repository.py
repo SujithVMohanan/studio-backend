@@ -1,6 +1,6 @@
 """Data access layer for the users app."""
 
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils import timezone
 from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
@@ -20,7 +20,7 @@ class UserRepository:
         return User.objects.filter(email=email).first()
 
     @staticmethod
-    def get_active_by_id(user_id) -> User | None:
+    def get_active_by_id(user_id: int | str) -> User | None:
         return User.objects.filter(pk=user_id, is_active=True).first()
 
     @staticmethod
@@ -46,7 +46,7 @@ class UserRepository:
         name: str | None = None,
         role: str | None = None,
         is_active: bool | None = None,
-    ):
+    ) -> QuerySet[User]:
         filters = Q()
         if user_id is not None:
             filters &= Q(pk=user_id)

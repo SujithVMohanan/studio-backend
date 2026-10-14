@@ -1,6 +1,7 @@
+from typing import Any
 
 
-def get_error_message(errors) -> str:
+def get_error_message(errors: Any) -> str:
     if errors is None or errors == "":
         return ""
     if isinstance(errors, str):

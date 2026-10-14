@@ -1,10 +1,14 @@
-
 """API views for credit packs, balances, and ledger entries."""
 
-from drf_yasg.utils import swagger_auto_schema
+from typing import Any
+
+from django.db.models import QuerySet
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 
+from apps.credits.models import CreditLedger, CreditPack
 from apps.credits.schemas import (
     BalanceSchema,
     CreditPackSchema,
@@ -16,11 +20,13 @@ from apps.credits.serializer import (
     GrantCreditPackSerializer,
 )
 from apps.credits.services.credit_service import CreditService
+from core.docs import swagger_auto_schema
 from core.permissions import IsMemberRole, IsStaffRole
 from core.responses import ResponseInfo
+from core.utils.request import authenticated_user
 
 
-class GrantCreditPackApiView(generics.GenericAPIView):
+class GrantCreditPackApiView(generics.GenericAPIView[CreditPack]):
 
     permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = GrantCreditPackSerializer
@@ -30,14 +36,14 @@ class GrantCreditPackApiView(generics.GenericAPIView):
         tags=["Credits"],
         operation_summary="Grant credit pack",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         if not serializer.is_valid():
             return ResponseInfo.validation_error(serializer.errors)
 
         pack = CreditService.grant_pack(
-            actor=request.user,
+            actor=authenticated_user(request),
             validated_data=serializer.validated_data,
         )
 
@@ -47,7 +53,7 @@ class GrantCreditPackApiView(generics.GenericAPIView):
         )
 
 
-class GetBalanceApiView(generics.GenericAPIView):
+class GetBalanceApiView(generics.GenericAPIView[Any]):
 
     permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class = BalanceSchema
@@ -56,8 +62,8 @@ class GetBalanceApiView(generics.GenericAPIView):
         tags=["Credits"],
         operation_summary="My balance and packs",
     )
-    def get(self, request, *args, **kwargs):
-        balance = CreditService.get_balance(member=request.user)
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        balance = CreditService.get_balance(member=authenticated_user(request))
 
         return ResponseInfo.ok(
             BalanceSchema(balance).data,
@@ -65,7 +71,7 @@ class GetBalanceApiView(generics.GenericAPIView):
         )
 
 
-class GetBalanceAtApiView(generics.GenericAPIView):
+class GetBalanceAtApiView(generics.GenericAPIView[Any]):
 
     permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class = BalanceSchema
@@ -75,7 +81,7 @@ class GetBalanceAtApiView(generics.GenericAPIView):
         tags=["Credits"],
         operation_summary="My balance at a past moment",
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         query_serializer = BalanceAtQuerySerializer(
             data=request.query_params,
         )
@@ -84,7 +90,7 @@ class GetBalanceAtApiView(generics.GenericAPIView):
             return ResponseInfo.validation_error(query_serializer.errors)
 
         balance = CreditService.get_balance_at(
-            member=request.user,
+            member=authenticated_user(request),
             at=query_serializer.validated_data["at"],
         )
 
@@ -94,7 +100,7 @@ class GetBalanceAtApiView(generics.GenericAPIView):
         )
 
 
-class GetLedgerApiView(generics.ListAPIView):
+class GetLedgerApiView(generics.ListAPIView[CreditLedger]):
 
     permission_classes        = [IsAuthenticated, IsMemberRole]
     serializer_class          = LedgerEntrySchema
@@ -105,17 +111,17 @@ class GetLedgerApiView(generics.ListAPIView):
         tags=["Credits"],
         operation_summary="My credit movements",
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
-        
+    def get_queryset(self) -> QuerySet[CreditLedger]:
+
         query_serializer = self.query_serializer_class(
             data=self.request.query_params,
         )
         query_serializer.is_valid(raise_exception=True)
 
         return CreditService.list_ledger(
-            member=self.request.user,
+            member=authenticated_user(self.request),
             validated_data=query_serializer.validated_data,
         )

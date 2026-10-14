@@ -7,7 +7,6 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 
-
 class Studio(models.Model):
 
     name                      = models.CharField(_("Name"), max_length=150,blank=False, unique=True)
@@ -23,16 +22,16 @@ class Studio(models.Model):
         db_table = "studios_studios"
         ordering = ("name", "id")
 
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def zone(self) -> ZoneInfo:
         return ZoneInfo(self.timezone)
 
-    def __str__(self) -> str:
-        return self.name
-
 
 class ClassSession(models.Model):
-    
+
     studio           = models.ForeignKey(
         Studio, on_delete=models.PROTECT, related_name="class_sessions", db_index=False
     )
@@ -58,9 +57,9 @@ class ClassSession(models.Model):
             models.CheckConstraint(condition=Q(duration_minutes__gte=1), name="class_duration_gte_1"),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.studio_id} @ {self.starts_at.isoformat()}"
+
     @property
     def ends_at(self) -> datetime:
         return self.starts_at + timedelta(minutes=self.duration_minutes)
-
-    def __str__(self) -> str:
-        return f"{self.studio_id} @ {self.starts_at.isoformat()}"

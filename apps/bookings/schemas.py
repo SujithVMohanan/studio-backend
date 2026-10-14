@@ -10,7 +10,7 @@ BOOKING_ID_NAMESPACE  = Booking._meta.label_lower
 WAITLIST_ID_NAMESPACE = WaitlistEntry._meta.label_lower
 
 
-class ClassSummarySchema(BlankNullsMixin, serializers.ModelSerializer):
+class ClassSummarySchema(BlankNullsMixin, serializers.ModelSerializer[ClassSession]):
     uid             = EncodedIdField(namespace=CLASS_ID_NAMESPACE, source="id", read_only=True)
     studio_name     = serializers.CharField(source="studio.name", read_only=True)
     studio_timezone = serializers.CharField(source="studio.timezone", read_only=True)
@@ -21,7 +21,7 @@ class ClassSummarySchema(BlankNullsMixin, serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class BookingSchema(BlankNullsMixin, serializers.ModelSerializer):
+class BookingSchema(BlankNullsMixin, serializers.ModelSerializer[Booking]):
     uid           = EncodedIdField(namespace=BOOKING_ID_NAMESPACE, source="id", read_only=True)
     class_session = ClassSummarySchema(read_only=True)
 
@@ -34,7 +34,7 @@ class BookingSchema(BlankNullsMixin, serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class WaitlistEntrySchema(BlankNullsMixin, serializers.ModelSerializer):
+class WaitlistEntrySchema(BlankNullsMixin, serializers.ModelSerializer[WaitlistEntry]):
 
     uid           = EncodedIdField(namespace=WAITLIST_ID_NAMESPACE, source="id", read_only=True)
     class_session = ClassSummarySchema(read_only=True)

@@ -4,7 +4,7 @@
 from datetime import datetime
 from typing import Any
 
-from django.db.models import Count, IntegerField, Q, QuerySet, Value
+from django.db.models import Count, Q, QuerySet
 
 from apps.studios.models import ClassSession, Studio
 

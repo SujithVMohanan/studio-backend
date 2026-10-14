@@ -8,7 +8,7 @@ from core.encryption.fields import EncodedIdField
 from core.utils.serializers import AwareDateTimeField, StrictIntegerField
 
 
-class GrantCreditPackSerializer(serializers.Serializer):
+class GrantCreditPackSerializer(serializers.Serializer[Any]):
     member_uid = EncodedIdField(namespace=User._meta.label_lower)
     credits    = StrictIntegerField(min_value=1)
     granted_on = serializers.DateField()
@@ -20,9 +20,9 @@ class GrantCreditPackSerializer(serializers.Serializer):
         return attrs
 
 
-class GetLedgerQuerySerializer(serializers.Serializer):
+class GetLedgerQuerySerializer(serializers.Serializer[Any]):
     cause = serializers.ChoiceField(choices=CreditLedger.Cause.choices, required=False)
 
 
-class BalanceAtQuerySerializer(serializers.Serializer):
+class BalanceAtQuerySerializer(serializers.Serializer[Any]):
     at = AwareDateTimeField(help_text="ISO 8601 with offset, e.g. 2026-10-14T10:00:00Z")

@@ -14,7 +14,6 @@ from apps.users.models import User
 from core.exceptions.business import BusinessConflict, ResourceNotFound
 from core.utils import clock
 
-
 logger = logging.getLogger("studio")
 
 

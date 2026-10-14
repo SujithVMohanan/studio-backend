@@ -11,8 +11,8 @@ STUDIO_ID_NAMESPACE = Studio._meta.label_lower
 CLASS_ID_NAMESPACE  = ClassSession._meta.label_lower
 
 
-class StudioSerializer(serializers.Serializer):
-    
+class StudioSerializer(serializers.Serializer[Any]):
+
     name                      = serializers.CharField(max_length=150, trim_whitespace=True)
     timezone                  = serializers.CharField(max_length=64)
     cancellation_cutoff_hours = StrictIntegerField(min_value=0, default=4)
@@ -21,7 +21,7 @@ class StudioSerializer(serializers.Serializer):
         return validate_iana_timezone(value)
 
 
-class GetStudiosQuerySerializer(serializers.Serializer):
+class GetStudiosQuerySerializer(serializers.Serializer[Any]):
     uid  = EncodedIdField(namespace=STUDIO_ID_NAMESPACE, required=False)
     name = serializers.CharField(required=False, allow_blank=True, max_length=150)
 
@@ -29,7 +29,7 @@ class GetStudiosQuerySerializer(serializers.Serializer):
         return value.strip() or None
 
 
-class CreateClassSerializer(serializers.Serializer):
+class CreateClassSerializer(serializers.Serializer[Any]):
 
     studio_uid       = EncodedIdField(namespace=STUDIO_ID_NAMESPACE)
     starts_at        = AwareDateTimeField()
@@ -38,8 +38,8 @@ class CreateClassSerializer(serializers.Serializer):
     credit_cost      = StrictIntegerField(min_value=0)
 
 
-class GetClassesQuerySerializer(serializers.Serializer):
-    
+class GetClassesQuerySerializer(serializers.Serializer[Any]):
+
     start      = AwareDateTimeField(required=False, help_text="Inclusive, ISO 8601 with offset")
     end        = AwareDateTimeField(required=False, help_text="Exclusive, ISO 8601 with offset")
     studio_uid = EncodedIdField(namespace=STUDIO_ID_NAMESPACE, required=False)

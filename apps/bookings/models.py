@@ -2,11 +2,9 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-
-from apps.studios.models import ClassSession
 from django.utils.translation import gettext_lazy as _
 
-
+from apps.studios.models import ClassSession
 
 
 class Booking(models.Model):
@@ -23,16 +21,25 @@ class Booking(models.Model):
         REFUNDED  = "refunded", "Refunded"
         FORFEITED = "forfeited", "Forfeited"
 
-    member               = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="bookings")
+    member               = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="bookings"
+    )
     class_session        = models.ForeignKey(ClassSession, on_delete=models.PROTECT, related_name="bookings")
-    status               = models.CharField(_("Status"), max_length=10, choices=Status.choices, default=Status.CONFIRMED)
+    status               = models.CharField(
+        _("Status"), max_length=10, choices=Status.choices, default=Status.CONFIRMED
+    )
     source               = models.CharField(_("Source"), max_length=10, choices=Source.choices, default=Source.DIRECT)
     credits_charged      = models.PositiveIntegerField(_("Credits Charged"))
-    idempotency_key      = models.CharField(_("Idempotency Key"), max_length=255, null=True, blank=True)
+    # NULL for waitlist promotions; NULLs never collide in the per-member unique constraint.
+    idempotency_key      = models.CharField(  # noqa: DJ001
+        _("Idempotency Key"), max_length=255, null=True, blank=True
+    )
     booked_at            = models.DateTimeField(_("Booked At"), default=timezone.now)
     cancelled_at         = models.DateTimeField(_("Cancelled At"), null=True, blank=True)
     credits_refunded     = models.PositiveIntegerField(null=True, blank=True)
-    cancellation_outcome = models.CharField(_("Cancellation Outcome"), max_length=10, choices=Outcome.choices, null=True, blank=True)
+    cancellation_outcome = models.CharField(  # noqa: DJ001
+        _("Cancellation Outcome"), max_length=10, choices=Outcome.choices, null=True, blank=True
+    )
 
     class Meta:
         db_table = "bookings_bookings"
@@ -63,7 +70,9 @@ class WaitlistEntry(models.Model):
         PROMOTED = "promoted", "Promoted"
         LEFT     = "left", "Left"
 
-    member        = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="waitlist_entries")
+    member        = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="waitlist_entries"
+    )
     class_session = models.ForeignKey(ClassSession, on_delete=models.PROTECT, related_name="waitlist_entries")
     status        = models.CharField(_("Status"), max_length=10, choices=Status.choices, default=Status.WAITING)
     joined_at     = models.DateTimeField(_("Joined At"), default=timezone.now)

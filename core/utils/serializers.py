@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from django.utils import timezone
@@ -17,7 +18,7 @@ class AwareDateTimeField(serializers.DateTimeField):
         "naive": "Include a timezone offset, for example 2026-10-20T10:00:00Z.",
     }
 
-    def to_internal_value(self, value: Any):
+    def to_internal_value(self, value: Any) -> datetime:
         if isinstance(value, str):
             parsed = parse_datetime(value.strip())
             if parsed is not None and timezone.is_naive(parsed):
@@ -28,6 +29,6 @@ class AwareDateTimeField(serializers.DateTimeField):
 class BlankNullsMixin:
     """Render None values as "" in serialized output. Must come before the serializer class in the bases."""
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
+    def to_representation(self, instance: Any) -> dict[str, Any]:
+        data: dict[str, Any] = super().to_representation(instance)  # type: ignore[misc]
         return {key: ("" if value is None else value) for key, value in data.items()}

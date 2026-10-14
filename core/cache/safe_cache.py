@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from django.core.cache import cache
 
@@ -8,7 +9,7 @@ logger = logging.getLogger("studio")
 class SafeCache:
 
     @staticmethod
-    def get(key: str, default=None):
+    def get(key: str, default: Any = None) -> Any:
         try:
             return cache.get(key, default)
         except Exception:
@@ -16,7 +17,7 @@ class SafeCache:
             return default
 
     @staticmethod
-    def set(key: str, value, timeout: int | None = None) -> bool:
+    def set(key: str, value: Any, timeout: int | None = None) -> bool:
         try:
             cache.set(key, value, timeout=timeout)
             return True

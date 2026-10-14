@@ -1,3 +1,8 @@
 -r requirements.txt
 pytest==8.4.2
 pytest-django==4.11.1
+ruff==0.17.0
+mypy==2.3.1
+django-stubs==6.1.2
+djangorestframework-stubs==3.18.1
+types-PyYAML==6.0.12.20260906

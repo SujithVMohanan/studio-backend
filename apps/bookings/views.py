@@ -1,9 +1,13 @@
+from typing import Any
 
+from django.db.models import QuerySet
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 
+from apps.bookings.models import Booking, WaitlistEntry
 from apps.bookings.schemas import BOOKING_ID_NAMESPACE, BookingSchema, WaitlistEntrySchema
 from apps.bookings.serializer import (
     IDEMPOTENCY_HEADER,
@@ -16,10 +20,11 @@ from apps.bookings.serializer import (
 from apps.bookings.services.booking_service import BookingService
 from apps.bookings.services.cancel_service import CancelService
 from apps.bookings.services.waitlist_service import WaitlistService
+from core.docs import swagger_auto_schema
 from core.encryption.fields import decode_id_or_404
 from core.permissions import IsMemberRole
 from core.responses import ResponseInfo
-
+from core.utils.request import authenticated_user
 
 IDEMPOTENCY_PARAMETER = openapi.Parameter(
     name=IDEMPOTENCY_HEADER,
@@ -33,7 +38,7 @@ IDEMPOTENCY_PARAMETER = openapi.Parameter(
 )
 
 
-class CreateBookingApiView(generics.GenericAPIView):
+class CreateBookingApiView(generics.GenericAPIView[Booking]):
 
     permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = CreateBookingSerializer
@@ -44,7 +49,7 @@ class CreateBookingApiView(generics.GenericAPIView):
         tags=["Bookings"],
         operation_summary="Book a class",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 
         idempotency_key = (
             request.headers.get(IDEMPOTENCY_HEADER) or ""
@@ -65,7 +70,7 @@ class CreateBookingApiView(generics.GenericAPIView):
             return ResponseInfo.validation_error(serializer.errors)
 
         booking, created = BookingService.book_class(
-            member=request.user,
+            member=authenticated_user(request),
             class_id=serializer.validated_data["class_uid"],
             idempotency_key=idempotency_key,
         )
@@ -84,7 +89,7 @@ class CreateBookingApiView(generics.GenericAPIView):
         )
 
 
-class GetBookingsApiView(generics.ListAPIView):
+class GetBookingsApiView(generics.ListAPIView[Booking]):
 
     permission_classes        = [IsAuthenticated, IsMemberRole]
     serializer_class          = BookingSchema
@@ -95,22 +100,22 @@ class GetBookingsApiView(generics.ListAPIView):
         tags=["Bookings"],
         operation_summary="My bookings",
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Booking]:
         query_serializer = self.query_serializer_class(
             data=self.request.query_params,
         )
         query_serializer.is_valid(raise_exception=True)
 
         return BookingService.list_bookings(
-            member=self.request.user,
+            member=authenticated_user(self.request),
             validated_data=query_serializer.validated_data,
         )
 
 
-class CancelBookingApiView(generics.GenericAPIView):
+class CancelBookingApiView(generics.GenericAPIView[Booking]):
 
     permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = BookingSchema
@@ -120,12 +125,12 @@ class CancelBookingApiView(generics.GenericAPIView):
         tags=["Bookings"],
         operation_summary="Cancel my booking",
     )
-    def post(self, request, booking_uid: str, *args, **kwargs):
+    def post(self, request: Request, booking_uid: str, *args: Any, **kwargs: Any) -> Response:
 
         booking_id = decode_id_or_404(booking_uid, BOOKING_ID_NAMESPACE)
 
         booking = CancelService.cancel_booking(
-            member=request.user,
+            member=authenticated_user(request),
             booking_id=booking_id,
         )
 
@@ -135,7 +140,7 @@ class CancelBookingApiView(generics.GenericAPIView):
         )
 
 
-class JoinWaitlistApiView(generics.GenericAPIView):
+class JoinWaitlistApiView(generics.GenericAPIView[WaitlistEntry]):
 
     permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = WaitlistClassSerializer
@@ -145,14 +150,14 @@ class JoinWaitlistApiView(generics.GenericAPIView):
         tags=["Waitlist"],
         operation_summary="Join waitlist",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
             return ResponseInfo.validation_error(serializer.errors)
 
         entry = WaitlistService.join_waitlist(
-            member=request.user,
+            member=authenticated_user(request),
             class_id=serializer.validated_data["class_uid"],
         )
 
@@ -162,7 +167,7 @@ class JoinWaitlistApiView(generics.GenericAPIView):
         )
 
 
-class LeaveWaitlistApiView(generics.GenericAPIView):
+class LeaveWaitlistApiView(generics.GenericAPIView[WaitlistEntry]):
 
     permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = WaitlistClassSerializer
@@ -172,14 +177,14 @@ class LeaveWaitlistApiView(generics.GenericAPIView):
         tags=["Waitlist"],
         operation_summary="Leave waitlist",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
             return ResponseInfo.validation_error(serializer.errors)
 
         entry = WaitlistService.leave_waitlist(
-            member=request.user,
+            member=authenticated_user(request),
             class_id=serializer.validated_data["class_uid"],
         )
 
@@ -189,7 +194,7 @@ class LeaveWaitlistApiView(generics.GenericAPIView):
         )
 
 
-class GetWaitlistApiView(generics.ListAPIView):
+class GetWaitlistApiView(generics.ListAPIView[WaitlistEntry]):
 
     permission_classes        = [IsAuthenticated, IsMemberRole]
     serializer_class          = WaitlistEntrySchema
@@ -200,16 +205,16 @@ class GetWaitlistApiView(generics.ListAPIView):
         tags=["Waitlist"],
         operation_summary="My waitlist entries",
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[WaitlistEntry]:
         query_serializer = self.query_serializer_class(
             data=self.request.query_params,
         )
         query_serializer.is_valid(raise_exception=True)
 
         return WaitlistService.list_waitlist(
-            member=self.request.user,
+            member=authenticated_user(self.request),
             validated_data=query_serializer.validated_data,
         )

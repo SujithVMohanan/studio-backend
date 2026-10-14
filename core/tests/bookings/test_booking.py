@@ -104,4 +104,5 @@ def test_same_key_is_scoped_per_member(member, other_member, grant, make_class):
         member=other_member, class_id=session.id, idempotency_key="k1", now=NOW
     )
 
-    assert created_a and created_b
+    assert created_a
+    assert created_b

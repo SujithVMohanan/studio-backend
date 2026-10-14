@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.bookings.models import Booking, WaitlistEntry
@@ -8,17 +10,17 @@ IDEMPOTENCY_HEADER  = "Idempotency-Key"
 IDEMPOTENCY_MAX_LEN = 255
 
 
-class CreateBookingSerializer(serializers.Serializer):
+class CreateBookingSerializer(serializers.Serializer[Any]):
     class_uid = EncodedIdField(namespace=CLASS_ID_NAMESPACE)
 
 
-class GetBookingsQuerySerializer(serializers.Serializer):
+class GetBookingsQuerySerializer(serializers.Serializer[Any]):
     status = serializers.ChoiceField(choices=Booking.Status.choices, required=False)
 
 
-class WaitlistClassSerializer(serializers.Serializer):
+class WaitlistClassSerializer(serializers.Serializer[Any]):
     class_uid = EncodedIdField(namespace=CLASS_ID_NAMESPACE)
 
 
-class GetWaitlistQuerySerializer(serializers.Serializer):
+class GetWaitlistQuerySerializer(serializers.Serializer[Any]):
     status = serializers.ChoiceField(choices=WaitlistEntry.Status.choices, required=False)

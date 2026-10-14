@@ -43,7 +43,7 @@ class BookingService:
         idempotency_key: str,
         now: datetime | None = None,
     ) -> tuple[Booking, bool]:
-        
+
         current_time = now if now is not None else clock.now()
 
         existing = BookingRepository.get_by_member_key(

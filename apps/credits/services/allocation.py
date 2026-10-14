@@ -1,12 +1,13 @@
-
-
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
-from apps.credits.models import CreditPack, CreditLedger
+from apps.credits.models import CreditLedger, CreditPack
 from apps.credits.repository import CreditLedgerRepository, CreditPackRepository
 from core.exceptions.business import BusinessConflict
 from core.utils import clock
 
+if TYPE_CHECKING:
+    from apps.bookings.models import Booking
 
 
 def spendable_balance(
@@ -36,7 +37,7 @@ def plan_allocation(
     amount: int,
     today: date,
 ) -> list[tuple[CreditPack, int]]:
-    
+
     if amount < 0:
         raise ValueError("Credit amount cannot be negative.")
 
@@ -75,7 +76,7 @@ def plan_allocation(
 
 
 
-def spend_for_booking(*, booking, now: datetime) -> int:
+def spend_for_booking(*, booking: "Booking", now: datetime) -> int:
 
     plan = plan_allocation(
         member_id=booking.member_id,
@@ -87,7 +88,7 @@ def spend_for_booking(*, booking, now: datetime) -> int:
 
 def record_spend(
     *,
-    booking,
+    booking: "Booking",
     plan: list[tuple[CreditPack, int]],
     now: datetime,
 ) -> int:
@@ -109,7 +110,7 @@ def record_spend(
 
 
 
-def refund_booking(*, booking, now: datetime) -> int:
+def refund_booking(*, booking: "Booking", now: datetime) -> int:
 
     spends = CreditLedgerRepository.spend_rows_for_booking(booking.id)
 

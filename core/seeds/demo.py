@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta
 
-from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.db import transaction
 
 from apps.credits.services.credit_service import CreditService
 from apps.studios.models import ClassSession, Studio
 from apps.studios.services.class_service import ClassService
+from apps.users.models import User
 from core.utils import clock
 
 FIXTURE = "demo"
@@ -59,7 +59,7 @@ def seed_demo(*, now: datetime | None = None) -> SeedReport:
 
     call_command("loaddata", FIXTURE, verbosity=0)
 
-    staff = get_user_model().objects.get(email=STAFF_EMAIL)
+    staff = User.objects.get(email=STAFF_EMAIL)
 
     for studio in Studio.objects.order_by("id"):
         report.classes_created += _seed_classes(studio=studio, actor=staff, now=current_time)
@@ -68,7 +68,7 @@ def seed_demo(*, now: datetime | None = None) -> SeedReport:
     return report
 
 
-def _seed_classes(*, studio: Studio, actor, now: datetime) -> int:
+def _seed_classes(*, studio: Studio, actor: User, now: datetime) -> int:
     zone = studio.zone
     local_today = now.astimezone(zone).date()
     created = 0
@@ -95,7 +95,7 @@ def _seed_classes(*, studio: Studio, actor, now: datetime) -> int:
     return created
 
 
-def _schedule(*, studio: Studio, actor, slot: ClassSlot, starts_at: datetime, now: datetime) -> None:
+def _schedule(*, studio: Studio, actor: User, slot: ClassSlot, starts_at: datetime, now: datetime) -> None:
     ClassService.schedule_class(
         actor=actor,
         validated_data={
@@ -109,8 +109,7 @@ def _schedule(*, studio: Studio, actor, slot: ClassSlot, starts_at: datetime, no
     )
 
 
-def _seed_packs(*, actor, now: datetime) -> int:
-    User = get_user_model()
+def _seed_packs(*, actor: User, now: datetime) -> int:
     today = clock.utc_today(now)
     granted = 0
 

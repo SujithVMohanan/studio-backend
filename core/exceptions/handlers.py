@@ -1,9 +1,13 @@
-from core.exceptions.messages import get_error_message
-from core.responses import ResponseInfo
+from typing import Any
+
+from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+from core.exceptions.messages import get_error_message
+from core.responses import ResponseInfo
 
-def handle_exception(exc, context):
+
+def handle_exception(exc: Exception, context: dict[str, Any]) -> Response | None:
 
     response = exception_handler(exc, context)
     if response is None:

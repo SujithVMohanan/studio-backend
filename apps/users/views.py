@@ -1,7 +1,12 @@
-from drf_yasg.utils import swagger_auto_schema
+from typing import Any
+
+from django.db.models import QuerySet
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 
+from apps.users.models import User
 from apps.users.schema import GetUsersApiSchema, LoginResponseSchema
 from apps.users.serializer import (
     DeleteUsersSerializer,
@@ -13,22 +18,26 @@ from apps.users.serializer import (
 )
 from apps.users.services.auth_service import AuthService
 from apps.users.services.user_service import UserService
+from core.docs import swagger_auto_schema
 from core.permissions import IsStaffRole
 from core.responses import ResponseInfo
 from core.throttles import AuthRateThrottle
+from core.utils.request import authenticated_user
 
 
-def _session_payload(tokens: dict, user, schema) -> dict:
+def _session_payload(
+    tokens: dict[str, str], user: User, schema: type[LoginResponseSchema]
+) -> dict[str, Any]:
     return {**tokens, "user": schema(user).data}
 
 
-class PublicAuthApiView(generics.GenericAPIView):
+class PublicAuthApiView(generics.GenericAPIView[User]):
 
     permission_classes     = [AllowAny]
     authentication_classes = []
     throttle_classes       = [AuthRateThrottle]
 
-    def get_authenticate_header(self, request):
+    def get_authenticate_header(self, request: Request) -> str:
         return 'Bearer realm="api"'
 
 
@@ -42,7 +51,7 @@ class RegisterUserApiView(PublicAuthApiView):
         tags=["auth"],
         operation_summary="User register",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         if not serializer.is_valid():
@@ -68,7 +77,7 @@ class LoginUserApiView(PublicAuthApiView):
         tags=["auth"],
         operation_summary="User login",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         if not serializer.is_valid():
@@ -93,7 +102,7 @@ class RefreshTokenApiView(PublicAuthApiView):
         tags=["auth"],
         operation_summary="Refresh access token",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         if not serializer.is_valid():
@@ -106,7 +115,7 @@ class RefreshTokenApiView(PublicAuthApiView):
         return ResponseInfo.ok(tokens, message="Token refreshed.")
 
 
-class LogoutUserApiView(generics.GenericAPIView):
+class LogoutUserApiView(generics.GenericAPIView[User]):
 
     permission_classes = [IsAuthenticated]
     serializer_class   = LogoutUserSerializer
@@ -116,14 +125,14 @@ class LogoutUserApiView(generics.GenericAPIView):
         tags=["auth"],
         operation_summary="User logout",
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         if not serializer.is_valid():
             return ResponseInfo.validation_error(serializer.errors)
 
         AuthService.logout(
-            user=request.user,
+            user=authenticated_user(request),
             access_token=str(request.auth),
             validated_data=serializer.validated_data,
         )
@@ -131,7 +140,7 @@ class LogoutUserApiView(generics.GenericAPIView):
         return ResponseInfo.ok(message="Logout successful")
 
 
-class CurrentUserApiView(generics.GenericAPIView):
+class CurrentUserApiView(generics.GenericAPIView[User]):
 
     permission_classes = [IsAuthenticated]
     serializer_class   = LoginResponseSchema
@@ -140,14 +149,14 @@ class CurrentUserApiView(generics.GenericAPIView):
         tags=["auth"],
         operation_summary="Current user",
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return ResponseInfo.ok(
             self.get_serializer(request.user).data,
             message="User retrieved successfully.",
         )
 
 
-class GetUsersApiView(generics.ListAPIView):
+class GetUsersApiView(generics.ListAPIView[User]):
 
     permission_classes     = [IsAuthenticated, IsStaffRole]
     serializer_class       = GetUsersApiSchema
@@ -158,16 +167,16 @@ class GetUsersApiView(generics.ListAPIView):
         tags=["Users"],
         operation_summary="Get users",
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[User]:
         query = self.query_serializer_class(data=self.request.query_params)
         query.is_valid(raise_exception=True)
         return UserService.get_users(validated_data=query.validated_data)
 
 
-class DeleteUsersApiView(generics.GenericAPIView):
+class DeleteUsersApiView(generics.GenericAPIView[User]):
 
     permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class   = DeleteUsersSerializer
@@ -177,14 +186,14 @@ class DeleteUsersApiView(generics.GenericAPIView):
         tags=["Users"],
         operation_summary="Delete users",
     )
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         if not serializer.is_valid():
             return ResponseInfo.validation_error(serializer.errors)
 
         payload = UserService.delete_users(
-            actor=request.user,
+            actor=authenticated_user(request),
             validated_data=serializer.validated_data,
         )
 

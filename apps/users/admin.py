@@ -2,11 +2,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
+
 from .models import User
 
 
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(BaseUserAdmin[User]):
     list_display    = ("email", "full_name", "role", "is_active", "is_staff", "date_joined")
     list_filter     = ("role", "is_active", "is_staff", "is_superuser", "date_joined")
     search_fields   = ("email", "full_name")

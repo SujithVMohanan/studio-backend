@@ -4,3 +4,52 @@ testpaths = ["core/tests"]
 pythonpath = ["."]
 python_files = ["test_*.py"]
 addopts = "-ra --strict-markers --import-mode=importlib"
+filterwarnings = [
+    "ignore:jsonschema.RefResolver is deprecated:DeprecationWarning",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+extend-exclude = ["**/migrations/**", "venv"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # import sorting
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "C4",       # comprehensions
+    "SIM",      # simplify
+    "DJ",       # django
+    "PT",       # pytest style
+    "RUF",      # ruff-specific
+]
+ignore = ["RUF012"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "core", "config"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+mypy_path = "."
+explicit_package_bases = true
+exclude = ["migrations/", "venv/"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[[tool.mypy.overrides]]
+module = ["drf_yasg.*", "environ.*", "corsheaders.*", "rest_framework_simplejwt.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["core.tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_any_generics = false
+warn_return_any = false

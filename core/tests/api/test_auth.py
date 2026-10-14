@@ -29,7 +29,8 @@ def test_register_creates_member_and_returns_tokens():
 
     assert response.status_code == 201
     data = body(response)
-    assert data["access"] and data["refresh"]
+    assert data["access"]
+    assert data["refresh"]
     assert data["user"]["email"] == "new.member@test.local"
     assert data["user"]["role"] == User.Role.MEMBER
 
@@ -66,7 +67,8 @@ def test_register_rejects_weak_password():
 def test_login_returns_tokens(member):
     tokens = login(member.email, "pass")
 
-    assert tokens["access"] and tokens["refresh"]
+    assert tokens["access"]
+    assert tokens["refresh"]
     assert tokens["user"]["email"] == member.email
 
 

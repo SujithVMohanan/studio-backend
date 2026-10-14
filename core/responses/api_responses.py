@@ -1,10 +1,14 @@
+from typing import Any
+
 from rest_framework import status
 from rest_framework.response import Response
+
 from core.exceptions.messages import get_error_message
+
 
 class ResponseInfo:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.response = {
             "status": False,
             "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -14,7 +18,15 @@ class ResponseInfo:
         }
 
     @staticmethod
-    def body(*, ok=True, code=200, message="", data=None, errors=None, error_code=None):
+    def body(
+        *,
+        ok: bool = True,
+        code: int = 200,
+        message: str = "",
+        data: Any = None,
+        errors: Any = None,
+        error_code: str | None = None,
+    ) -> dict[str, Any]:
         payload = {
             "status"        : ok,
             "status_code"   : code,
@@ -27,7 +39,16 @@ class ResponseInfo:
         return payload
 
     @classmethod
-    def _reply(cls, *, ok, code, message="", data=None, errors=None, error_code=None):
+    def _reply(
+        cls,
+        *,
+        ok: bool,
+        code: int,
+        message: str = "",
+        data: Any = None,
+        errors: Any = None,
+        error_code: str | None = None,
+    ) -> Response:
         return Response(
             cls.body(
                 ok=ok,
@@ -42,35 +63,41 @@ class ResponseInfo:
 
 
     @classmethod
-    def ok(cls, data=None, message="Success"):
+    def ok(cls, data: Any = None, message: str = "Success") -> Response:
         return cls._reply(
             ok=True, code=status.HTTP_200_OK, message=message, data=data
             )
-    
+
 
     @classmethod
-    def created(cls, data=None, message="Created successfully"):
+    def created(cls, data: Any = None, message: str = "Created successfully") -> Response:
         return cls._reply(
             ok=True, code=status.HTTP_201_CREATED, message=message, data=data
         )
 
 
     @classmethod
-    def accepted(cls, data=None, message="Accepted"):
+    def accepted(cls, data: Any = None, message: str = "Accepted") -> Response:
         return cls._reply(
             ok=True, code=status.HTTP_202_ACCEPTED, message=message, data=data
         )
 
 
     @classmethod
-    def no_content(cls, message="Deleted successfully"):
+    def no_content(cls, message: str = "Deleted successfully") -> Response:
         return cls._reply(
             ok=True, code=status.HTTP_200_OK, message=message
             )
-    
+
 
     @classmethod
-    def bad_request(cls, message="Bad request", errors=None, error_code=None, data=None):
+    def bad_request(
+        cls,
+        message: str = "Bad request",
+        errors: Any = None,
+        error_code: str | None = None,
+        data: Any = None,
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_400_BAD_REQUEST,
@@ -83,13 +110,11 @@ class ResponseInfo:
     @classmethod
     def validation_error(
         cls,
-        errors,
-        message="Validation failed",
-        error_code=None,
-        data=None,
-    ):
-        
-
+        errors: Any,
+        message: str = "Validation failed",
+        error_code: str | None = None,
+        data: Any = None,
+    ) -> Response:
         payload = errors if isinstance(errors, dict) else {"detail": errors}
         return cls.bad_request(
             message=get_error_message(payload) or message or "Validation failed",
@@ -100,7 +125,9 @@ class ResponseInfo:
 
 
     @classmethod
-    def unauthorized(cls, message="Authentication required", errors=None, error_code=None):
+    def unauthorized(
+        cls, message: str = "Authentication required", errors: Any = None, error_code: str | None = None
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_401_UNAUTHORIZED,
@@ -110,7 +137,9 @@ class ResponseInfo:
         )
 
     @classmethod
-    def forbidden(cls, message="You do not have permission", errors=None, error_code=None):
+    def forbidden(
+        cls, message: str = "You do not have permission", errors: Any = None, error_code: str | None = None
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_403_FORBIDDEN,
@@ -120,7 +149,7 @@ class ResponseInfo:
         )
 
     @classmethod
-    def not_found(cls, message="Not found", errors=None, error_code=None):
+    def not_found(cls, message: str = "Not found", errors: Any = None, error_code: str | None = None) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_404_NOT_FOUND,
@@ -130,7 +159,9 @@ class ResponseInfo:
         )
 
     @classmethod
-    def method_not_allowed(cls, message="Method not allowed", errors=None, error_code=None):
+    def method_not_allowed(
+        cls, message: str = "Method not allowed", errors: Any = None, error_code: str | None = None
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_405_METHOD_NOT_ALLOWED,
@@ -141,7 +172,7 @@ class ResponseInfo:
 
 
     @classmethod
-    def conflict(cls, message="Conflict", errors=None, error_code=None):
+    def conflict(cls, message: str = "Conflict", errors: Any = None, error_code: str | None = None) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_409_CONFLICT,
@@ -151,7 +182,9 @@ class ResponseInfo:
         )
 
     @classmethod
-    def unprocessable(cls, message="Validation failed", errors=None, error_code=None):
+    def unprocessable(
+        cls, message: str = "Validation failed", errors: Any = None, error_code: str | None = None
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -162,7 +195,9 @@ class ResponseInfo:
 
 
     @classmethod
-    def too_many_requests(cls, message="Too many requests", errors=None, error_code=None):
+    def too_many_requests(
+        cls, message: str = "Too many requests", errors: Any = None, error_code: str | None = None
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_429_TOO_MANY_REQUESTS,
@@ -172,7 +207,9 @@ class ResponseInfo:
         )
 
     @classmethod
-    def server_error(cls, message="Something went wrong", errors=None, error_code=None):
+    def server_error(
+        cls, message: str = "Something went wrong", errors: Any = None, error_code: str | None = None
+    ) -> Response:
         return cls._reply(
             ok        = False,
             code      = status.HTTP_500_INTERNAL_SERVER_ERROR,

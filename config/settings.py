@@ -1,9 +1,11 @@
 
 from datetime import timedelta
-
-import environ
 from pathlib import Path
 
+import django_stubs_ext
+import environ
+
+django_stubs_ext.monkeypatch()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -203,6 +205,8 @@ CACHES = {
     }
 }
 
+
+SWAGGER_USE_COMPAT_RENDERERS = False
 
 SWAGGER_SETTINGS = {
     "DEFAULT_API_URL": env(

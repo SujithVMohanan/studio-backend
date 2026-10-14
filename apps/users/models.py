@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
@@ -6,11 +8,11 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager["User"]):
 
     use_in_migrations = True
 
-    def _create_user(self, email, password, **extra_fields):
+    def _create_user(self, email: str, password: str | None, **extra_fields: Any) -> "User":
         if not email:
             raise ValueError("Email address is required.")
 
@@ -20,13 +22,13 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email: str, password: str | None = None, **extra_fields: Any) -> "User":
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         extra_fields.setdefault("is_active", True)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, email: str, password: str | None = None, **extra_fields: Any) -> "User":
         if not password:
             raise ValueError("Superuser password is required.")
 
@@ -70,10 +72,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             ),
         ]
 
-    def save(self, *args, **kwargs):
+    def __str__(self) -> str:
+        return f"{self.email}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
         if self.email:
             self.email = self.__class__.objects.normalize_email(self.email).lower()
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.email}"

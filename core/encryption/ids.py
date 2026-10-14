@@ -5,7 +5,6 @@ import struct
 
 from django.utils.crypto import constant_time_compare, salted_hmac
 
-
 _KEY_SALT = "studio.encoded-id"
 _ID_FORMAT = ">Q"
 _ID_SIZE = struct.calcsize(_ID_FORMAT)
@@ -36,7 +35,7 @@ def _mask(namespace: str, mac: bytes, payload: bytes) -> bytes:
 
     return bytes(
         value ^ mask
-        for value, mask in zip(payload, key)
+        for value, mask in zip(payload, key[: len(payload)], strict=True)
     )
 
 
@@ -91,4 +90,5 @@ def decode_id(token: str, namespace: str) -> int:
     if not constant_time_compare(mac, expected_mac):
         raise InvalidEncodedId("Invalid ID.")
 
-    return struct.unpack(_ID_FORMAT, payload)[0]
+    (pk,) = struct.unpack(_ID_FORMAT, payload)
+    return int(pk)

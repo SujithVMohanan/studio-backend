@@ -84,11 +84,11 @@ class CreditLedgerRepository:
 
         return CreditLedger.objects.filter(filters).order_by("created_at", "id")
 
-    
+
     @staticmethod
     def bulk_create(rows: list[CreditLedger]) -> list[CreditLedger]:
         return CreditLedger.objects.bulk_create(rows)
-    
+
 
     @staticmethod
     def spend_rows_for_booking(booking_id: int) -> list[CreditLedger]:

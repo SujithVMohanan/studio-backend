@@ -6,13 +6,15 @@ from core.encryption.fields import EncodedIdField
 from core.utils.serializers import BlankNullsMixin
 
 
-class StudioSchema(BlankNullsMixin, serializers.ModelSerializer):
+class StudioSchema(BlankNullsMixin, serializers.ModelSerializer[Studio]):
     uid = EncodedIdField(namespace=STUDIO_ID_NAMESPACE, source="id", read_only=True)
 
     class Meta:
         model = Studio
-        fields = ("uid", "name", "timezone", "cancellation_cutoff_hours", "created_at", "updated_at")
-        read_only_fields = fields
+        fields: tuple[str, ...] = (
+            "uid", "name", "timezone", "cancellation_cutoff_hours", "created_at", "updated_at",
+        )
+        read_only_fields: tuple[str, ...] = fields
 
 
 class StudioSummarySchema(StudioSchema):
@@ -21,7 +23,7 @@ class StudioSummarySchema(StudioSchema):
         read_only_fields = fields
 
 
-class ClassSessionSchema(BlankNullsMixin, serializers.ModelSerializer):
+class ClassSessionSchema(BlankNullsMixin, serializers.ModelSerializer[ClassSession]):
     uid             = EncodedIdField(namespace=CLASS_ID_NAMESPACE, source="id", read_only=True)
     studio          = StudioSummarySchema(read_only=True)
     starts_at_local = serializers.SerializerMethodField()

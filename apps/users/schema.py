@@ -5,7 +5,7 @@ from core.encryption.fields import EncodedIdField
 from core.utils.serializers import BlankNullsMixin
 
 
-class LoginResponseSchema(BlankNullsMixin, serializers.ModelSerializer):
+class LoginResponseSchema(BlankNullsMixin, serializers.ModelSerializer[User]):
     uid = EncodedIdField(
         namespace=User._meta.label_lower,
         source="id",
@@ -14,7 +14,7 @@ class LoginResponseSchema(BlankNullsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
+        fields: tuple[str, ...] = (
             "uid",
             "full_name",
             "email",
@@ -22,13 +22,10 @@ class LoginResponseSchema(BlankNullsMixin, serializers.ModelSerializer):
             "is_active",
             "date_joined",
         )
-        read_only_fields = fields
+        read_only_fields: tuple[str, ...] = fields
 
 
 class GetUsersApiSchema(LoginResponseSchema):
     class Meta(LoginResponseSchema.Meta):
-        fields = LoginResponseSchema.Meta.fields + (
-            "is_staff",
-            "last_login",
-        )
+        fields = (*LoginResponseSchema.Meta.fields, "is_staff", "last_login")
         read_only_fields = fields

@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.db import IntegrityError, transaction
+from django.db.models import QuerySet
 from rest_framework.exceptions import NotFound, ValidationError
 
 from apps.users.models import User
@@ -11,7 +14,7 @@ _EMAIL_TAKEN = {"email": ["This email is already registered."]}
 
 class UserService:
     @staticmethod
-    def register_user(*, validated_data: dict) -> tuple[dict, User]:
+    def register_user(*, validated_data: dict[str, Any]) -> tuple[dict[str, str], User]:
         email = validated_data["email"]
 
         if UserRepository.email_exists(email):
@@ -30,7 +33,7 @@ class UserService:
         return issue_tokens(user), user
 
     @staticmethod
-    def get_users(*, validated_data: dict):
+    def get_users(*, validated_data: dict[str, Any]) -> QuerySet[User]:
         return UserRepository.list_users(
             user_id   = validated_data.get("uid"),
             email     = validated_data.get("email"),
@@ -40,7 +43,7 @@ class UserService:
         )
 
     @staticmethod
-    def delete_users(*, actor: User, validated_data: dict) -> dict:
+    def delete_users(*, actor: User, validated_data: dict[str, Any]) -> dict[str, int]:
         user_ids = validated_data["uids"]
 
         if actor.pk in user_ids:

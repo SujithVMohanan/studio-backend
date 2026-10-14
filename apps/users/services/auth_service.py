@@ -1,3 +1,4 @@
+from typing import Any
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils.crypto import constant_time_compare
@@ -10,7 +11,6 @@ from apps.users.repository import UserRepository
 from core.exceptions.auth import AuthFailed
 from core.utils.jwt_blacklist import blacklist_access_token
 from core.utils.tokens import issue_tokens, rotate_tokens
-
 
 _INVALID_CREDENTIALS = "Invalid email or password."
 _INVALID_REFRESH_TOKEN = "Refresh token is invalid or expired."
@@ -28,7 +28,8 @@ def _password_matches(user: User | None, password: str) -> bool:
 
 def _parse_refresh(raw_refresh: str) -> RefreshToken:
     try:
-        return RefreshToken(raw_refresh)
+        # simplejwt annotates the constructor argument as Token, but it takes the encoded string.
+        return RefreshToken(raw_refresh)  # type: ignore[arg-type]
     except TokenError:
         raise AuthFailed(
             _INVALID_REFRESH_TOKEN,
@@ -48,11 +49,11 @@ def _validate_refresh_owner(refresh: RefreshToken, user: User) -> None:
 
 class AuthService:
     @staticmethod
-    def login(*, validated_data: dict) -> tuple[dict, User]:
+    def login(*, validated_data: dict[str, Any]) -> tuple[dict[str, str], User]:
         user = UserRepository.get_by_email(validated_data["email"])
         password = validated_data["password"]
 
-        if not _password_matches(user, password):
+        if not _password_matches(user, password) or user is None:
             raise AuthFailed(
                 _INVALID_CREDENTIALS,
                 code="INVALID_CREDENTIALS",
@@ -69,11 +70,11 @@ class AuthService:
         return issue_tokens(user), user
 
     @staticmethod
-    def refresh(*, validated_data: dict) -> dict:
+    def refresh(*, validated_data: dict[str, Any]) -> dict[str, str]:
         refresh = _parse_refresh(validated_data["refresh"])
         user_id = refresh.get(api_settings.USER_ID_CLAIM)
 
-        user = UserRepository.get_active_by_id(user_id)
+        user = UserRepository.get_active_by_id(user_id) if user_id is not None else None
 
         if user is None:
             raise AuthFailed(
@@ -90,7 +91,7 @@ class AuthService:
         *,
         user: User,
         access_token: str,
-        validated_data: dict,
+        validated_data: dict[str, Any],
     ) -> None:
         raw_refresh = validated_data.get("refresh")
 

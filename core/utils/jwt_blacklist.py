@@ -1,8 +1,11 @@
+from contextlib import suppress
+
 from django.utils import timezone
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import (
     AccessToken,
     RefreshToken,
+    Token,
 )
 
 from core.cache import SafeCache
@@ -15,13 +18,14 @@ def _access_cache_key(jti: str) -> str:
 
 
 def blacklist_access_token(raw_token: str) -> None:
-    token = AccessToken(raw_token)
+    # simplejwt annotates the constructor argument as Token, but it takes the encoded string.
+    token = AccessToken(raw_token)  # type: ignore[arg-type]
     jti = token["jti"]
     ttl = max(int(token["exp"]) - int(timezone.now().timestamp()), 1)
     SafeCache.set(_access_cache_key(jti), 1, timeout=ttl)
 
 
-def is_access_token_blacklisted(validated_token) -> bool:
+def is_access_token_blacklisted(validated_token: Token) -> bool:
     jti = validated_token.get("jti")
     if not jti:
         return False
@@ -29,7 +33,7 @@ def is_access_token_blacklisted(validated_token) -> bool:
 
 
 def blacklist_refresh_token(raw_refresh: str) -> None:
-    RefreshToken(raw_refresh).blacklist()
+    RefreshToken(raw_refresh).blacklist()  # type: ignore[arg-type]
 
 
 def logout_tokens(*, refresh_token: str | None = None, access_token: str | None = None) -> None:
@@ -44,7 +48,5 @@ def logout_tokens(*, refresh_token: str | None = None, access_token: str | None 
 
     if not access_token:
         return
-    try:
+    with suppress(TokenError):
         blacklist_access_token(access_token)
-    except TokenError:
-        pass
