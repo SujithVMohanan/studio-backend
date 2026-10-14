@@ -1,4 +1,6 @@
 
+from datetime import timedelta
+
 import environ
 from pathlib import Path
 
@@ -39,6 +41,10 @@ LOCAL_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "drf_yasg",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -148,6 +154,62 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "core.pagination.page.RestPagination",
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "core.utils.jwt_auth.JWTAccessBlacklistAuthentication",
+    ),
+    "EXCEPTION_HANDLER": "core.exceptions.handlers.handle_exception",
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "user": "300/min",
+        "auth": "30/min",
+    },
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": (
+        "rest_framework_simplejwt.tokens.AccessToken",
+    ),
+    "TOKEN_TYPE_CLAIM": "token_type",
+}
+
+AUTH_THROTTLE_DISABLED = False
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "studio-default",
+    }
+}
+
+
+SWAGGER_SETTINGS = {
+    "DEFAULT_API_URL": env(
+        "SWAGGER_DEFAULT_API_URL",
+        default="http://localhost:8000",
+    ),
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+        },
+    },
+}
 
 
 CORS_ALLOWED_ORIGINS = env.list(
