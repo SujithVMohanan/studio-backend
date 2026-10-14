@@ -16,12 +16,13 @@ from apps.credits.serializer import (
     GrantCreditPackSerializer,
 )
 from apps.credits.services.credit_service import CreditService
+from core.permissions import IsMemberRole, IsStaffRole
 from core.responses import ResponseInfo
 
 
 class GrantCreditPackApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = GrantCreditPackSerializer
 
     @swagger_auto_schema(
@@ -48,7 +49,7 @@ class GrantCreditPackApiView(generics.GenericAPIView):
 
 class GetBalanceApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class = BalanceSchema
 
     @swagger_auto_schema(
@@ -66,7 +67,7 @@ class GetBalanceApiView(generics.GenericAPIView):
 
 class GetBalanceAtApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class = BalanceSchema
 
     @swagger_auto_schema(
@@ -95,7 +96,7 @@ class GetBalanceAtApiView(generics.GenericAPIView):
 
 class GetLedgerApiView(generics.ListAPIView):
 
-    permission_classes        = [IsAuthenticated]
+    permission_classes        = [IsAuthenticated, IsMemberRole]
     serializer_class          = LedgerEntrySchema
     query_serializer_class    = GetLedgerQuerySerializer
 

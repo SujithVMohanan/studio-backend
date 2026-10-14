@@ -13,6 +13,7 @@ from apps.users.serializer import (
 )
 from apps.users.services.auth_service import AuthService
 from apps.users.services.user_service import UserService
+from core.permissions import IsStaffRole
 from core.responses import ResponseInfo
 from core.throttles import AuthRateThrottle
 
@@ -148,7 +149,7 @@ class CurrentUserApiView(generics.GenericAPIView):
 
 class GetUsersApiView(generics.ListAPIView):
 
-    permission_classes     = [IsAuthenticated,]
+    permission_classes     = [IsAuthenticated, IsStaffRole]
     serializer_class       = GetUsersApiSchema
     query_serializer_class = GetUsersQuerySerializer
 
@@ -168,7 +169,7 @@ class GetUsersApiView(generics.ListAPIView):
 
 class DeleteUsersApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class   = DeleteUsersSerializer
 
     @swagger_auto_schema(

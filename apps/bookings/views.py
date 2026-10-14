@@ -17,6 +17,7 @@ from apps.bookings.services.booking_service import BookingService
 from apps.bookings.services.cancel_service import CancelService
 from apps.bookings.services.waitlist_service import WaitlistService
 from core.encryption.fields import decode_id_or_404
+from core.permissions import IsMemberRole
 from core.responses import ResponseInfo
 
 
@@ -34,7 +35,7 @@ IDEMPOTENCY_PARAMETER = openapi.Parameter(
 
 class CreateBookingApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = CreateBookingSerializer
 
     @swagger_auto_schema(
@@ -85,7 +86,7 @@ class CreateBookingApiView(generics.GenericAPIView):
 
 class GetBookingsApiView(generics.ListAPIView):
 
-    permission_classes        = [IsAuthenticated]
+    permission_classes        = [IsAuthenticated, IsMemberRole]
     serializer_class          = BookingSchema
     query_serializer_class    = GetBookingsQuerySerializer
 
@@ -111,7 +112,7 @@ class GetBookingsApiView(generics.ListAPIView):
 
 class CancelBookingApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = BookingSchema
 
     @swagger_auto_schema(
@@ -136,7 +137,7 @@ class CancelBookingApiView(generics.GenericAPIView):
 
 class JoinWaitlistApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = WaitlistClassSerializer
 
     @swagger_auto_schema(
@@ -163,7 +164,7 @@ class JoinWaitlistApiView(generics.GenericAPIView):
 
 class LeaveWaitlistApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMemberRole]
     serializer_class   = WaitlistClassSerializer
 
     @swagger_auto_schema(
@@ -190,7 +191,7 @@ class LeaveWaitlistApiView(generics.GenericAPIView):
 
 class GetWaitlistApiView(generics.ListAPIView):
 
-    permission_classes        = [IsAuthenticated]
+    permission_classes        = [IsAuthenticated, IsMemberRole]
     serializer_class          = WaitlistEntrySchema
     query_serializer_class    = GetWaitlistQuerySerializer
 

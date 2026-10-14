@@ -16,12 +16,13 @@ from apps.studios.serializer import (
 from apps.studios.services.class_service import ClassService
 from apps.studios.services.studio_service import StudioService
 from core.encryption.fields import decode_id_or_404
+from core.permissions import IsStaffRole
 from core.responses import ResponseInfo
 
 
 class CreateStudioApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = StudioSerializer
 
     @swagger_auto_schema(
@@ -49,7 +50,7 @@ class CreateStudioApiView(generics.GenericAPIView):
 
 class UpdateStudioApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = StudioSerializer
 
     @swagger_auto_schema(
@@ -105,7 +106,7 @@ class GetStudiosApiView(generics.ListAPIView):
 
 class CreateClassApiView(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = CreateClassSerializer
 
     @swagger_auto_schema(
