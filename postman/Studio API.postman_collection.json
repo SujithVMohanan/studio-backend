@@ -1,0 +1,762 @@
+{
+  "info": {
+    "_postman_id": "e9e5fef9-4fef-4b97-b635-d136262f569a",
+    "name": "Studio API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "18760982",
+    "_collection_link": "https://go.postman.co/collection/18760982-e9e5fef9-4fef-4b97-b635-d136262f569a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1.register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"full_name\": \"John Doe\",\r\n  \"password\": \"Str0ng#Pass2026\",\r\n  \"confirm_password\": \"Str0ng#Pass2026\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/register/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "register",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2.login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"email\": \"staff@studio.test\", \r\n    \"password\": \"StudioDemo#2026\" \r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/login/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "login",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3.refresh-token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "refresh",
+              "value": "{{json_web_token}}",
+              "type": "text",
+              "uuid": "cf329d78-4da3-4453-8083-11fd25aa7e7f"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/refresh/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "refresh",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4.my-details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/me/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5.logout",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "refresh",
+              "value": "",
+              "type": "text",
+              "uuid": "6a9b9b0d-8aea-41a8-a621-9e0891558f70"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/logout/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "logout",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6.list-users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/get-users/?page=1&limit=2",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "get-users",
+            ""
+          ],
+          "query": [
+            {
+              "key": "uid",
+              "value": "upacM9H5OWbVShLHIi3qFg",
+              "disabled": true
+            },
+            {
+              "key": "email",
+              "value": "john@example.com",
+              "disabled": true
+            },
+            {
+              "key": "name",
+              "value": "John Doe",
+              "disabled": true
+            },
+            {
+              "key": "is_active",
+              "value": "false",
+              "disabled": true
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7.delete-user",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "uids",
+              "value": "upacM9H5OWbVShLHIi3qFg",
+              "type": "text",
+              "uuid": "1d7f6d04-013e-4c3b-8b76-b8c8b01d43a5"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/delete-users/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "delete-users",
+            ""
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": "",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8.studio-create",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"name\": \"Downtown Yoga-123\", \r\n    \"timezone\": \"America/New_York\", \r\n    \"cancellation_cutoff_hours\": 4 \r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/studios/create-studio/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "studios",
+            "create-studio",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9.update-studio",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"name\": \"Downtown Yoga-4321\", \r\n    \"timezone\": \"America/New_York\", \r\n    \"cancellation_cutoff_hours\": 6\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/studios/update-studio/MkxJj10b0GJeexxvLPXoXQ/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "studios",
+            "update-studio",
+            "MkxJj10b0GJeexxvLPXoXQ",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10.list-studio",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/studios/get-studios/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "studios",
+            "get-studios",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11.create-class",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"studio_uid\": \"MkxJj10b0GJeexxvLPXoXQ\",\r\n  \"starts_at\": \"2026-10-20T18:00:00+05:30\",\r\n  \"duration_minutes\": 60,\r\n  \"spots\": 2,\r\n  \"credit_cost\": 2\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/classes/create-class/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "classes",
+            "create-class",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "12.list-classes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/classes/get-classes/?start=2026-10-15T00:00:00Z&end=2026-10-20T00:00:00Z&page=1&limit=2",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "classes",
+            "get-classes",
+            ""
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-10-15T00:00:00Z"
+            },
+            {
+              "key": "end",
+              "value": "2026-10-20T00:00:00Z"
+            },
+            {
+              "key": "uid",
+              "value": "",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "studio_uid",
+              "value": "",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "limit",
+              "value": "2",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "13.grand-credit-pack",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"member_uid\": \"R8Yh6HtbU3XrVrGWTH-hFA\", \r\n    \"credits\": 10, \r\n    \"granted_on\": \"2026-10-15\", \r\n    \"expires_on\": \"2026-11-15\" \r\n\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/credits/grant-credit-pack/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "credits",
+            "grant-credit-pack",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "14.current-balance",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/credits/get-balance/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "credits",
+            "get-balance",
+            ""
+          ],
+          "query": [
+            {
+              "key": "at",
+              "value": "",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "15.book-class-memebr",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{authorization_secret_-_uuid}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"class_uid\": \"999LBP1UQfINxIYJGz5DuA\" \r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/create-booking/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "bookings",
+            "create-booking",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "16.my-booking",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/get-bookings/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "bookings",
+            "get-bookings",
+            ""
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "cancelled",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "18.cancell-booking",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/cancel-booking/q64dkW7WT3gMAk9u35GnFg/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "bookings",
+            "cancel-booking",
+            "q64dkW7WT3gMAk9u35GnFg",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "19.wait-list",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"class_uid\": \"999LBP1UQfINxIYJGz5DuA\" \r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/join-waitlist/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "bookings",
+            "join-waitlist",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "20.leave-waitlist-memebr",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \r\n    \"class_uid\": \"999LBP1UQfINxIYJGz5DuA\" \r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/leave-waitlist/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "bookings",
+            "leave-waitlist",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "21.my-waitlist",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{member_access}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/bookings/get-waitlist/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "bookings",
+            "get-waitlist",
+            ""
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "member_access",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
