@@ -33,13 +33,14 @@ class UserService:
         return issue_tokens(user), user
 
     @staticmethod
-    def get_users(*, validated_data: dict[str, Any]) -> QuerySet[User]:
+    def get_users(*, actor: User, validated_data: dict[str, Any]) -> QuerySet[User]:
         return UserRepository.list_users(
-            user_id   = validated_data.get("uid"),
-            email     = validated_data.get("email"),
-            name      = validated_data.get("name"),
-            role      = validated_data.get("role"),
-            is_active = validated_data.get("is_active"),
+            exclude_user_id = actor.pk,
+            user_id         = validated_data.get("uid"),
+            email           = validated_data.get("email"),
+            name            = validated_data.get("name"),
+            role            = validated_data.get("role"),
+            is_active       = validated_data.get("is_active"),
         )
 
     @staticmethod

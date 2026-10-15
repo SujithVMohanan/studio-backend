@@ -27,6 +27,16 @@ def test_staff_filters_users_by_email(client_for, staff, member, other_member):
     assert [row["uid"] for row in results(response)] == [user_uid(member)]
 
 
+def test_get_users_excludes_current_user_and_superusers(client_for, staff, member):
+    root = User.objects.create_superuser(email="root@test.local", password="pass")
+
+    emails = {row["email"] for row in results(client_for(staff).get(GET_USERS_URL))}
+
+    assert member.email in emails
+    assert staff.email not in emails
+    assert root.email not in emails
+
+
 def test_staff_deletes_member_and_member_can_no_longer_log_in(client_for, staff, member):
     response = delete_users(client_for(staff), member)
 

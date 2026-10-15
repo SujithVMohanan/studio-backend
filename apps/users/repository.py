@@ -41,6 +41,7 @@ class UserRepository:
     @staticmethod
     def list_users(
         *,
+        exclude_user_id: int,
         user_id: int | None = None,
         email: str | None = None,
         name: str | None = None,
@@ -61,6 +62,7 @@ class UserRepository:
 
         return (
             User.objects.filter(filters)
+            .exclude(Q(pk=exclude_user_id) | Q(is_superuser=True))
             .only(
                 "id",
                 "full_name",

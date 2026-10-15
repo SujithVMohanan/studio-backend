@@ -173,7 +173,10 @@ class GetUsersApiView(generics.ListAPIView[User]):
     def get_queryset(self) -> QuerySet[User]:
         query = self.query_serializer_class(data=self.request.query_params)
         query.is_valid(raise_exception=True)
-        return UserService.get_users(validated_data=query.validated_data)
+        return UserService.get_users(
+            actor=authenticated_user(self.request),
+            validated_data=query.validated_data,
+        )
 
 
 class DeleteUsersApiView(generics.GenericAPIView[User]):
