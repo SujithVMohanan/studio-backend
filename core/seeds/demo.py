@@ -48,6 +48,7 @@ MEMBER_PACKS = {
 
 @dataclass(slots=True)
 class SeedReport:
+    fixture_loaded: bool = False
     classes_created: int = 0
     packs_granted: int = 0
 
@@ -57,7 +58,10 @@ def seed_demo(*, now: datetime | None = None) -> SeedReport:
     current_time = now if now is not None else clock.now()
     report = SeedReport()
 
-    call_command("loaddata", FIXTURE, verbosity=0)
+    # Studios have no natural key, so reloading the fixture would duplicate their unique names.
+    if not User.objects.filter(email=STAFF_EMAIL).exists():
+        call_command("loaddata", FIXTURE, verbosity=0)
+        report.fixture_loaded = True
 
     staff = User.objects.get(email=STAFF_EMAIL)
 

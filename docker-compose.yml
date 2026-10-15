@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-studio}
+      POSTGRES_USER: ${DB_USER:-studio}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-studio}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build: .
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-docker-dev-secret-key-change-me}
+      DEBUG: "True"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+      DB_NAME: ${DB_NAME:-studio}
+      DB_USER: ${DB_USER:-studio}
+      DB_PASSWORD: ${DB_PASSWORD:-studio}
+      DB_HOST: db
+      DB_PORT: "5432"
+      TIME_ZONE: ${TIME_ZONE:-Asia/Kolkata}
+      SWAGGER_DEFAULT_API_URL: ${SWAGGER_DEFAULT_API_URL:-http://localhost:8000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

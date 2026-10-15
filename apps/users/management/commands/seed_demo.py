@@ -19,7 +19,10 @@ class Command(BaseCommand):
 
         report = seed_demo()
 
-        self.stdout.write(f"Fixture '{FIXTURE}' loaded (users and studios).")
+        if report.fixture_loaded:
+            self.stdout.write(f"Fixture '{FIXTURE}' loaded (users and studios).")
+        else:
+            self.stdout.write(f"Fixture '{FIXTURE}' already present, skipped.")
         self.stdout.write(f"Classes created: {report.classes_created}")
         self.stdout.write(f"Credit packs granted: {report.packs_granted}")
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
