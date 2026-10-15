@@ -12,11 +12,12 @@ Built with Django 5.2, Django REST Framework, PostgreSQL 16 and JWT authenticati
 2. [Run without Docker (step by step)](#run-without-docker-step-by-step)
 3. [Tests, linting and type checks](#tests-linting-and-type-checks)
 4. [API step by step](#api-step-by-step)
-5. [Main flow walkthrough](#main-flow-walkthrough)
-6. [Architecture](#architecture)
-7. [Design patterns](#design-patterns)
-8. [Decisions and trade-offs](#decisions-and-trade-offs)
-9. [CI](#ci)
+5. [Postman collection](#postman-collection)
+6. [Main flow walkthrough](#main-flow-walkthrough)
+7. [Architecture](#architecture)
+8. [Design patterns](#design-patterns)
+9. [Decisions and trade-offs](#decisions-and-trade-offs)
+10. [CI](#ci)
 
 ---
 
@@ -220,7 +221,7 @@ Tests live in `core/tests/`. Service-level tests pin the clock to a fixed instan
 | Time zones | Cutoff computed in studio-local wall-clock time, including across the New York DST change on 2026-11-01 |
 | Waitlist | Join only when full, FIFO promotion on cancel, members who can't afford the class are skipped, no promotion after the class starts |
 | Concurrency | Threads racing for the last spot (exactly one wins), concurrent retries with the same idempotency key (one booking, one charge) |
-| Access control | Every endpoint checked for unauthenticated, member, staff and superuser access |
+| Access control | Requests without a token are rejected; members can't call staff endpoints, staff can't call member endpoints; superusers pass both |
 | End to end | Authenticate, grant credits, book, fill the class, join the waitlist, cancel, then automatic promotion |
 
 The concurrency tests use real database transactions and threads (`@pytest.mark.django_db(transaction=True)`), so they exercise PostgreSQL row locks rather than mocks.
@@ -637,9 +638,13 @@ Promoted entries include `booking_uid`, the booking that was created for that me
 |---|---|---|
 | 400 | `VALIDATION_ERROR` | Invalid input; field details are in `errors` |
 | 400 | `IDEMPOTENCY_KEY_REQUIRED` | Booking without an `Idempotency-Key` header |
-| 401 | none | Missing, expired or revoked token |
+| 400 | `EMAIL_ALREADY_EXISTS` | Registering with an email that's already used |
+| 401 | `INVALID_CREDENTIALS` | Wrong email or password |
+| 401 | `ACCOUNT_DISABLED` | The account has been deactivated |
+| 401 | `INVALID_REFRESH_TOKEN` | Refresh token is invalid, expired, revoked or belongs to another user |
+| 401 | none | Missing, expired or revoked access token |
 | 403 | none | Wrong role |
-| 404 | `CLASS_NOT_FOUND`, `BOOKING_NOT_FOUND`, `NOT_WAITLISTED` | |
+| 404 | `STUDIO_NOT_FOUND`, `CLASS_NOT_FOUND`, `MEMBER_NOT_FOUND`, `BOOKING_NOT_FOUND`, `NOT_WAITLISTED` | |
 | 409 | `CLASS_FULL` | No spots left |
 | 409 | `ALREADY_BOOKED` | Member already has a confirmed booking for this class |
 | 409 | `CLASS_STARTED` | Class already started |
@@ -651,9 +656,58 @@ Promoted entries include `booking_uid`, the booking that was created for that me
 | 409 | `STUDIO_NAME_TAKEN` | Duplicate studio name |
 | 429 | none | Too many login, registration or refresh attempts (30 per minute) |
 
-### API collection
+---
 
-The OpenAPI spec is generated from the code and served at `GET /api/docs/json/`. To use it in Postman, save the JSON and import it with **Import**; Postman creates a request for every endpoint.
+## Postman collection
+
+The collection is in [`postman/Studio API.postman_collection.json`](postman/Studio%20API.postman_collection.json). Its requests are numbered in the order of the main flow, from **1.register** to **21.my-waitlist**.
+
+### Step 1: Start the API
+
+```bash
+docker compose up --build -d
+```
+
+### Step 2: Import the collection
+
+In Postman, click **Import** and choose `postman/Studio API.postman_collection.json`.
+
+### Step 3: Check the collection variables
+
+Open the collection, then the **Variables** tab:
+
+| Variable | Default | Used for |
+|---|---|---|
+| `baseUrl` | `http://127.0.0.1:8000` | Every request. Change it if the API runs elsewhere. |
+| `access_token` | empty | The collection's Bearer token, used by the auth, user, studio, class and credit-grant requests. Set it to a **staff** access token. |
+| `member_access` | empty | The Bearer token for the member requests: balance, bookings and waitlist. Set it to a **member** access token. |
+
+### Step 4: Log in as staff and as a member
+
+1. Send **2.login** with `staff@studio.test` / `StudioDemo#2026`. Copy `data.access` into `access_token`.
+2. Send **2.login** again with `member.a@studio.test` / `StudioDemo#2026`. Copy `data.access` into `member_access`.
+3. Save the collection, so the variables are used.
+
+Access tokens last 60 minutes. When one expires, log in again and update the variable.
+
+### Step 5: Follow the flow
+
+Run the requests in order:
+1. **Staff:** create a studio (8), update it (9), create a class (11) and grant credits to a member (13).
+2. **Member:** browse classes (12), check the balance (14) and book a class (15).
+3. **Waitlist:** when the class is full, another member joins the waitlist (19). Log in as that member and put their token in `member_access` first.
+4. **Cancel:** the booking member cancels (18), and the longest-waiting member who can afford it is promoted. Check with **16.my-booking** and **21.my-waitlist**.
+
+Before you send a request:
+- **Replace the IDs** saved in the requests (`studio_uid`, `class_uid`, `member_uid`, the booking ID in the cancel URL) with ones from your own responses, because IDs differ between databases. **6.list-users** gives member IDs, and **12.list-classes** gives class IDs.
+- **Each booking gets a new `Idempotency-Key` automatically** (`{{$guid}}`). To test a retry, put a fixed value in the header and send it twice; the second call returns the original booking.
+- **Use future dates.** Classes must start in the future, and **12.list-classes** needs a `start`/`end` range that includes them.
+
+The point-in-time balance (`GET /api/credits/get-balance-at/?at=...`) and the ledger (`GET /api/credits/get-ledger/`) aren't in the collection. Try them in Swagger at http://localhost:8000/api/docs/, or import the OpenAPI spec below.
+
+### Alternative: import from OpenAPI
+
+The OpenAPI spec is generated from the code and served at `GET /api/docs/json/`. In Postman, **Import** that URL to get a request for every endpoint, always matching the current code.
 
 ---
 
@@ -781,7 +835,7 @@ Database primary keys are never exposed. Every ID in the API is a 22-character t
 
 ### Authentication
 
-- **Login** returns a JWT pair. Access tokens last 15 minutes; refresh tokens last 30 days.
+- **Login** returns a JWT pair. Access tokens last 60 minutes; refresh tokens last 30 days.
 - **Logout** revokes the refresh token and also blacklists the current access token until it expires, so it can't be used again after logout.
 - **Login, registration and token refresh** are rate-limited to 30 requests per minute per client.
 - **Login takes the same time whether or not the email exists.** An unknown email still costs one password-hash check, so response timing doesn't reveal which emails are registered.
@@ -835,6 +889,9 @@ There's no running-balance column that could drift out of sync. Indexes on (memb
 
 **Expiry is a calendar date in UTC.**
 A pack with `expires_on = 2026-11-15` can be spent up to and including that UTC date.
+
+**Expiry isn't a ledger movement.**
+The ledger records grants, spends and refunds. When a pack expires, its unused credits leave the balance without a new ledger row. `GET /api/credits/get-balance/` explains the difference: it lists each pack with its `remaining` credits, `is_active` and `is_expired`, so the ledger total minus the remaining credits of inactive packs (expired, or not started yet) equals the balance.
 
 ---
 

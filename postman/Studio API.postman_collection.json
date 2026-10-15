@@ -398,16 +398,6 @@
     {
       "name": "13.grand-credit-pack",
       "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{member_access}}",
-              "type": "string"
-            }
-          ]
-        },
         "method": "POST",
         "header": [],
         "body": {
@@ -501,7 +491,7 @@
         "header": [
           {
             "key": "Idempotency-Key",
-            "value": "{{authorization_secret_-_uuid}}",
+            "value": "{{$guid}}",
             "type": "text"
           }
         ],
